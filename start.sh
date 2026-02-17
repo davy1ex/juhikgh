@@ -1,0 +1,1 @@
+cd spider && python3 backend/server.py
