@@ -47,5 +47,5 @@ COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
 COXA_RIGHT = {'FL': 100, 'FR': 80, 'BL': 100, 'BR': 80}
 COXA_LEFT = {'FL': 50, 'FR': 130, 'BL': 130, 'BR': 50}
 
-# Femur offset для move_forward_cycle (inline-логика)
-FEMUR_SWING_OFFSET = 40
+# Порядок ног для diagonal crawl вперёд (Hackster-порядок)
+CRAWL_LEG_ORDER = ['FL', 'BR', 'FR', 'BL']

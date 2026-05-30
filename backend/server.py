@@ -12,11 +12,35 @@ CORS(app)
 
 servo_manager = ServoManager()
 
+MOTION_METHODS = {
+    'move_forward_cycle',
+    'move_forward_cycle_low',
+    'move_backward_cycle',
+    'step_right',
+    'step_left',
+    'wave_fl_leg',
+    'stand_up',
+    'sit_down',
+    'push_up',
+}
+
 
 def _action_route(method_name, success_msg, error_msg):
     def handler():
+        if method_name in MOTION_METHODS and servo_manager.is_motion_busy():
+            return jsonify({
+                "success": False,
+                "message": "Робот уже выполняет движение",
+                "busy": True,
+            }), 409
         try:
             success = getattr(servo_manager, method_name)()
+            if success is None:
+                return jsonify({
+                    "success": False,
+                    "message": "Робот уже выполняет движение",
+                    "busy": True,
+                }), 409
             status = 200 if success else 500
             msg = success_msg if success else error_msg
             return jsonify({"success": success, "message": msg}), status
@@ -28,6 +52,11 @@ def _action_route(method_name, success_msg, error_msg):
 @app.route('/')
 def index():
     return send_from_directory('../frontend', 'index.html')
+
+
+@app.route('/calibrate')
+def calibrate():
+    return send_from_directory('../frontend', 'calibrate.html')
 
 
 @app.route('/<path:filename>')
@@ -43,9 +72,16 @@ def get_angles():
 
 @app.route('/api/i2c_status', methods=['GET'])
 def i2c_status():
-    """Проверка подключения PCA9685 по I2C."""
     connected = servo_manager.is_i2c_connected()
-    return jsonify({"connected": connected, "message": "PCA9685 подключен" if connected else "I2C не найден"})
+    return jsonify({
+        "connected": connected,
+        "message": "PCA9685 подключен" if connected else "I2C не найден",
+    })
+
+
+@app.route('/api/motion_status', methods=['GET'])
+def motion_status():
+    return jsonify({"busy": servo_manager.is_motion_busy()})
 
 
 @app.route('/api/set_angle', methods=['POST'])
@@ -67,7 +103,7 @@ def set_angle():
         return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
 
 
-app.add_url_rule('/api/move_forward', 'move_forward', _action_route('move_forward_cycle', 'Forward movement completed', 'Error during forward movement'), methods=['POST'])
+app.add_url_rule('/api/move_forward', 'move_forward', _action_route('move_forward_cycle', 'Forward step completed', 'Error during forward movement'), methods=['POST'])
 app.add_url_rule('/api/move_forward_2', 'move_forward_2', _action_route('move_forward_cycle_low', 'Forward (low stance) completed', 'Error during forward (low stance)'), methods=['POST'])
 app.add_url_rule('/api/move_backward', 'move_backward', _action_route('move_backward_cycle', 'Backward movement completed', 'Error during backward movement'), methods=['POST'])
 app.add_url_rule('/api/move_right', 'move_right', _action_route('step_right', 'Right step completed', 'Error during right movement'), methods=['POST'])
@@ -86,6 +122,7 @@ if __name__ == '__main__':
     print("Starting spider robot control server")
     print("=" * 60)
     print("Open in browser: http://localhost:5000")
+    print("Calibration:     http://localhost:5000/calibrate")
     print("I2C PCA9685:", "подключен" if servo_manager.is_i2c_connected() else "не найден")
     print("Debug mode:", debug)
     print("=" * 60)
