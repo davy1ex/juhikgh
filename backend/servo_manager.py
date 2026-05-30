@@ -217,7 +217,7 @@ class ServoManager:
                     delays=self.SWING_DELAYS,
                 )
                 self._body_push_coxa(
-                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_FORWARD,
+                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_BASE,
                     steps=10, tibia_delay=0.05, step_delay=0.02,
                 )
             return True
