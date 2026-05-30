@@ -48,5 +48,6 @@ COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
 COXA_RIGHT = {'FL': 100, 'FR': 80, 'BL': 100, 'BR': 80}
 COXA_LEFT = {'FL': 50, 'FR': 130, 'BL': 130, 'BR': 50}
 
-# Порядок ног для diagonal crawl вперёд (Hackster-порядок)
+# Порядок ног для diagonal crawl (Hackster-порядок)
 CRAWL_LEG_ORDER = ['FL', 'BR', 'FR', 'BL']
+CRAWL_LEG_ORDER_BACKWARD = list(reversed(CRAWL_LEG_ORDER))  # BL → FR → BR → FL

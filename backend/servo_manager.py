@@ -16,7 +16,7 @@ from spider_config import (
     COXA_SIT2, FEMUR_SIT2, TIBIA_SIT2,
     FEMUR_UP_OFFSET, FEMUR_DOWN_OFFSET, FEMUR_LOW_UP_OFFSET, FEMUR_LOW_DOWN_OFFSET,
     COXA_FORWARD, COXA_BACKWARD, COXA_LEFT, COXA_RIGHT,
-    CRAWL_LEG_ORDER,
+    CRAWL_LEG_ORDER, CRAWL_LEG_ORDER_BACKWARD,
 )
 
 
@@ -210,13 +210,16 @@ class ServoManager:
 
     def _move_backward_cycle_impl(self):
         try:
-            for leg in ['BL', 'FR', 'BR', 'FL']:
+            for leg in CRAWL_LEG_ORDER_BACKWARD:
                 self._swing_leg(
                     leg, TIBIA_BASE, COXA_BACKWARD,
                     FEMUR_UP_OFFSET, FEMUR_DOWN_OFFSET, FEMUR_BASE,
                     delays=self.SWING_DELAYS,
                 )
-                self._body_push_coxa(TIBIA_BASE, self.current_coxa_angles.copy(), COXA_FORWARD, steps=10)
+                self._body_push_coxa(
+                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_FORWARD,
+                    steps=10, tibia_delay=0.05, step_delay=0.02,
+                )
             return True
         except Exception as e:
             print(f"⚠️ Ошибка при движении назад: {e}")

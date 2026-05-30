@@ -6,6 +6,7 @@ const ACTION_ENDPOINTS = {
     stand_base: '/api/stand_base',
     push_up: '/api/push_up',
     move_forward: '/api/move_forward',
+    move_backward: '/api/move_backward',
 };
 
 let busy = false;

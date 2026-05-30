@@ -23,10 +23,15 @@
 
         <div class="simple-section">
             <h2>Движение</h2>
-            <button class="simple-btn simple-btn-large forward-btn" data-action="move_forward">
-                Шаг вперёд
-            </button>
-            <p class="simple-hint">Один цикл diagonal crawl: FL → BR → FR → BL</p>
+            <div class="simple-grid simple-grid-2">
+                <button class="simple-btn simple-btn-large forward-btn" data-action="move_forward">
+                    Шаг вперёд
+                </button>
+                <button class="simple-btn simple-btn-large backward-btn" data-action="move_backward">
+                    Шаг назад
+                </button>
+            </div>
+            <p class="simple-hint">Diagonal crawl: вперёд FL→BR→FR→BL, назад BL→FR→BR→FL</p>
         </div>
 
         <div class="message" id="message"></div>

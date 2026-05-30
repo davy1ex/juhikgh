@@ -106,7 +106,7 @@ def set_angle():
 
 app.add_url_rule('/api/move_forward', 'move_forward', _action_route('move_forward_cycle', 'Forward step completed', 'Error during forward movement'), methods=['POST'])
 app.add_url_rule('/api/move_forward_2', 'move_forward_2', _action_route('move_forward_cycle_low', 'Forward (low stance) completed', 'Error during forward (low stance)'), methods=['POST'])
-app.add_url_rule('/api/move_backward', 'move_backward', _action_route('move_backward_cycle', 'Backward movement completed', 'Error during backward movement'), methods=['POST'])
+app.add_url_rule('/api/move_backward', 'move_backward', _action_route('move_backward_cycle', 'Backward step completed', 'Error during backward movement'), methods=['POST'])
 app.add_url_rule('/api/move_right', 'move_right', _action_route('step_right', 'Right step completed', 'Error during right movement'), methods=['POST'])
 app.add_url_rule('/api/move_left', 'move_left', _action_route('step_left', 'Left step completed', 'Error during left movement'), methods=['POST'])
 app.add_url_rule('/api/wave_fl', 'wave_fl', _action_route('wave_fl_leg', 'FL leg waved', 'Error during wave'), methods=['POST'])
