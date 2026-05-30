@@ -190,6 +190,22 @@ h1 {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+.stand-base-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stand-base-btn:hover {
+    background: linear-gradient(135deg, #0e8074 0%, #2dd66a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stand-base-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
 .sit-btn {
     background: linear-gradient(135deg, #795548 0%, #5D4037 100%);
     color: white;
@@ -517,6 +533,23 @@ h1 {
 
 .nav-link a:hover {
     text-decoration: underline;
+}
+
+.simple-grid-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.stand-base-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stand-base-btn:hover {
+    background: linear-gradient(135deg, #0e8074 0%, #2dd66a 100%);
+}
+
+.stand-base-btn:active {
+    background: linear-gradient(135deg, #0a5f56 0%, #24b85a 100%);
 }
 
 @media (min-width: 420px) {

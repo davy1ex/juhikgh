@@ -19,10 +19,15 @@ LEG_CHANNELS = {
 VALID_LEGS = ['FL', 'FR', 'BL', 'BR']
 VALID_JOINTS = ['coxa', 'femur', 'tibia']
 
-# Базовая стойка — «Встать» и походка (diagonal crawl)
+# Базовая стойка — походка (diagonal crawl), «Встать в базовое»
 COXA_BASE = {'FL': 60, 'FR': 120, 'BL': 120, 'BR': 60}
 FEMUR_BASE = {'FL': 140, 'FR': 40, 'BL': 40, 'BR': 140}
 TIBIA_BASE = {'FL': 130, 'FR': 40, 'BL': 40, 'BR': 130}
+
+# Высокая стойка — «Встать вверх», отжимание
+COXA_STANDUP = {'FL': 60, 'FR': 120, 'BL': 120, 'BR': 60}
+FEMUR_STANDUP = {'FL': 90, 'FR': 90, 'BL': 90, 'BR': 90}
+TIBIA_STANDUP = {'FL': 90, 'FR': 90, 'BL': 90, 'BR': 90}
 
 # Сесть (просевшее положение)
 COXA_SIT2 = {'FL': 60, 'FR': 120, 'BL': 120, 'BR': 60}

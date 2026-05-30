@@ -283,13 +283,32 @@ async function standUp() {
         if (result.success) {
             // Обновляем углы после движения
             await loadAngles();
-            showMessage('Паук встал! 🚶');
+            showMessage('Встал вверх! 🚶');
         } else {
             showMessage(result.message || 'Ошибка при вставании', true);
         }
         
     } catch (error) {
         console.error('Ошибка при вставании:', error);
+        showMessage('Ошибка при отправке команды', true);
+    }
+}
+
+async function standBase() {
+    try {
+        const response = await fetch(`${API_URL}/api/stand_base`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const result = await response.json();
+        if (result.success) {
+            await loadAngles();
+            showMessage('Базовая стойка для походки');
+        } else {
+            showMessage(result.message || 'Ошибка', true);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
         showMessage('Ошибка при отправке команды', true);
     }
 }

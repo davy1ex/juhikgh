@@ -3,6 +3,7 @@ const API_URL = '';
 const ACTION_ENDPOINTS = {
     sit_down: '/api/sit_down',
     stand_up: '/api/stand_up',
+    stand_base: '/api/stand_base',
     push_up: '/api/push_up',
     move_forward: '/api/move_forward',
 };

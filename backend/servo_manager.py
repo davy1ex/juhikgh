@@ -12,6 +12,7 @@ from spider_config import (
     I2C_BUS, PCA9685_ADDRESS, MIN_PULSE, MAX_PULSE,
     LEG_CHANNELS, VALID_LEGS, VALID_JOINTS,
     COXA_BASE, FEMUR_BASE, TIBIA_BASE,
+    COXA_STANDUP, FEMUR_STANDUP, TIBIA_STANDUP,
     COXA_SIT2, FEMUR_SIT2, TIBIA_SIT2,
     FEMUR_UP_OFFSET, FEMUR_DOWN_OFFSET, FEMUR_LOW_UP_OFFSET, FEMUR_LOW_DOWN_OFFSET,
     COXA_FORWARD, COXA_BACKWARD, COXA_LEFT, COXA_RIGHT,
@@ -274,7 +275,24 @@ class ServoManager:
         return self._run_motion(lambda: self._wave_fl_leg_impl(times))
 
     def _stand_up_impl(self):
-        """Встать в базовую стойку походки (те же углы, что между шагами crawl)."""
+        """Встать вверх — высокая стойка (femur/tibia 90°)."""
+        try:
+            for leg in VALID_LEGS:
+                self._move_servo_fast(leg, 'coxa', COXA_STANDUP[leg])
+                self._move_servo_fast(leg, 'femur', FEMUR_STANDUP[leg])
+                self._move_servo_fast(leg, 'tibia', TIBIA_STANDUP[leg])
+            self.current_coxa_angles = COXA_STANDUP.copy()
+            time.sleep(0.1)
+            return True
+        except Exception as e:
+            print(f"⚠️ Ошибка при вставании вверх: {e}")
+            return False
+
+    def stand_up(self):
+        return self._run_motion(self._stand_up_impl)
+
+    def _stand_base_impl(self):
+        """Встать в базовое — стойка для походки."""
         try:
             for leg in VALID_LEGS:
                 self._move_servo_fast(leg, 'coxa', COXA_BASE[leg])
@@ -284,11 +302,11 @@ class ServoManager:
             time.sleep(0.1)
             return True
         except Exception as e:
-            print(f"⚠️ Ошибка при вставании: {e}")
+            print(f"⚠️ Ошибка при вставании в базовое: {e}")
             return False
 
-    def stand_up(self):
-        return self._run_motion(self._stand_up_impl)
+    def stand_base(self):
+        return self._run_motion(self._stand_base_impl)
 
     def _sit_down_impl(self):
         try:

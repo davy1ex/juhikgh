@@ -20,6 +20,7 @@ MOTION_METHODS = {
     'step_left',
     'wave_fl_leg',
     'stand_up',
+    'stand_base',
     'sit_down',
     'push_up',
 }
@@ -109,7 +110,8 @@ app.add_url_rule('/api/move_backward', 'move_backward', _action_route('move_back
 app.add_url_rule('/api/move_right', 'move_right', _action_route('step_right', 'Right step completed', 'Error during right movement'), methods=['POST'])
 app.add_url_rule('/api/move_left', 'move_left', _action_route('step_left', 'Left step completed', 'Error during left movement'), methods=['POST'])
 app.add_url_rule('/api/wave_fl', 'wave_fl', _action_route('wave_fl_leg', 'FL leg waved', 'Error during wave'), methods=['POST'])
-app.add_url_rule('/api/stand_up', 'stand_up', _action_route('stand_up', 'Spider stood up', 'Error during stand up'), methods=['POST'])
+app.add_url_rule('/api/stand_up', 'stand_up', _action_route('stand_up', 'Stood up (high pose)', 'Error during stand up'), methods=['POST'])
+app.add_url_rule('/api/stand_base', 'stand_base', _action_route('stand_base', 'Stood up to walking base', 'Error during stand to base'), methods=['POST'])
 app.add_url_rule('/api/sit_down', 'sit_down', _action_route('sit_down', 'Spider sat down', 'Error during sit down'), methods=['POST'])
 app.add_url_rule('/api/push_up', 'push_up', _action_route('push_up', 'Push-up completed', 'Error during push-up'), methods=['POST'])
 
