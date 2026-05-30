@@ -44,6 +44,12 @@ FEMUR_LOW_DOWN_OFFSET = 10
 COXA_FORWARD = {'FL': 30, 'FR': 160, 'BL': 60, 'BR': 160}
 COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
 
+# Swing назад: зеркало COXA_FORWARD относительно COXA_BASE (BL/BR наружу, не внутрь)
+COXA_BACKWARD_SWING = {
+    leg: max(0, min(180, 2 * COXA_BASE[leg] - COXA_FORWARD[leg]))
+    for leg in COXA_BASE
+}
+
 # Coxa для бокового шага
 COXA_RIGHT = {'FL': 100, 'FR': 80, 'BL': 100, 'BR': 80}
 COXA_LEFT = {'FL': 50, 'FR': 130, 'BL': 130, 'BR': 50}
