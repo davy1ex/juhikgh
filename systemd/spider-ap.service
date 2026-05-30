@@ -1,0 +1,15 @@
+[Unit]
+Description=Spider robot WiFi hotspot (fallback if home WiFi unavailable)
+After=NetworkManager.service
+Before=spider.service
+Wants=NetworkManager.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=SPIDER_USER=@USER@
+ExecStart=@PROJECT@/scripts/spider-ap.sh start
+ExecStop=@PROJECT@/scripts/spider-ap.sh stop
+
+[Install]
+WantedBy=multi-user.target

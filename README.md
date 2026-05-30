@@ -3,6 +3,7 @@
 ## Содержание
 
 - [Quickstart](#quickstart)
+  - [Сборка Quadro Spider с MG90S — по шагам](#сборка-quadro-spider-с-mg90s--по-шагам)
   - [Подключение сервоприводов и настройка LEG_CHANNELS](#подключение-сервоприводов-и-настройка-leg_channels)
   - [Как крепить сервоприводы](#как-крепить-сервоприводы)
   - [Питание PCA9685 (5–6 В)](#питание-pca9685-56-в)
@@ -21,11 +22,178 @@
   - [Названия суставов](#названия-суставов)
   - [Обозначение ног](#обозначение-ног)
 - [Углы](#углы)
-- [Автозапуск сервера](#автозапуск-сервера)
+- [Автозапуск пульта и Wi‑Fi точка доступа](#автозапуск-пульта-и-wi-fi-точка-доступа)
 
 ---
 
 ## Quickstart
+
+### Сборка Quadro Spider с MG90S — по шагам
+
+**Что нужно**
+
+| Деталь | Кол-во | Зачем |
+|--------|--------|-------|
+| Raspberry Pi 3/4 | 1 | Мозг, I2C к PCA9685 |
+| PCA9685 (16-канальный PWM) | 1 | Управление 12 серво |
+| MG90S (AliExpress) | 12 | 3 серво × 4 ноги |
+| 18650 | 2 | Питание серво (в серии ≈ 7,4 В) |
+| XLA step-up/down модуль | 1 | Стабильные 5–6 В на V+ PCA9685 |
+| Провода, общий GND | — | Pi + PCA9685 + блок питания |
+
+**Шаг 1 — Питание серво (18650 → XLA → PCA9685 V+)**
+
+```
+18650 (+) ──► 18650 (+)     (две батареи ПОСЛЕДОВАТЕЛЬНО ≈ 7,4 В)
+18650 (−) ──► GND общий
+
+XLA IN+  ◄── от + батарей
+XLA IN−  ◄── GND
+XLA OUT+ ──► PCA9685 V+   (5–6 В на серво)
+XLA OUT− ──► GND общий
+
+⚠️ GND Raspberry Pi = GND PCA9685 = GND XLA = GND батарей — обязательно!
+⚠️ V+ PCA9685 — отдельное питание серво, НЕ от Pi!
+```
+
+Скрутка/пайка проводов от двух 18650 к XLA даёт ток, которого не хватает от USB Pi. MG90S при движении тянут до ~500 мА каждый — без XLA и мощного БП серво дёргаются или не двигаются.
+
+**Шаг 0 — Включить I2C на Raspberry Pi (до подключения PCA9685)**
+
+Без этого `i2cdetect` и Python-код не увидят PCA9685.
+
+```bash
+sudo raspi-config
+```
+
+В меню по шагам:
+
+1. **3 Interface Options** (Интерфейсы)
+2. **I5 I2C** (или **P5 I2C** — номер зависит от версии Raspberry Pi OS)
+3. **Yes** / **\<Yes\>** — включить I2C
+4. **\<Ok\>**
+5. **\<Finish\>** — при запросе перезагрузки выбери **\<Yes\>**
+
+После перезагрузки проверь, что модули загружены:
+
+```bash
+ls /dev/i2c*
+# Ожидается: /dev/i2c-1
+
+sudo i2cdetect -y 1
+# До подключения PCA9685 таблица может быть пустой — это нормально
+```
+
+На старых образах вместо `raspi-config` можно так (если пункт I2C уже включён — пропусти):
+
+```bash
+echo 'dtparam=i2c_arm=on' | sudo tee -a /boot/firmware/config.txt
+# или на старых системах: /boot/config.txt
+sudo reboot
+```
+
+**Шаг 2 — I2C: Raspberry Pi → PCA9685**
+
+| PCA9685 | Raspberry Pi |
+|---------|--------------|
+| SDA | GPIO 2 (Pin 3) |
+| SCL | GPIO 3 (Pin 5) |
+| GND | GND |
+| VCC | 3,3 В (логика) |
+| V+ | от XLA (шаг 1) |
+
+Подключай PCA9685 **после** шага 0 (I2C уже включён в системе).
+
+**Шаг 3 — 12 серво MG90S → каналы PCA9685**
+
+Каждый серво: **коричневый/чёрный → GND**, **красный → V+** (или общая шина V+), **оранжевый/жёлтый → PWM-канал**.
+
+| Нога | coxa | femur | tibia | Где на роботе |
+|------|------|-------|-------|---------------|
+| **FL** | 0 | 1 | 2 | передняя левая |
+| **FR** | 3 | 4 | 5 | передняя правая |
+| **BL** | 6 | 7 | 8 | задняя левая |
+| **BR** | 9 | 10 | 11 | задняя правая |
+
+- **coxa** — ближайший к корпусу сустав  
+- **femur** — средний  
+- **tibia** — голень, дальний от корпуса  
+
+Если распаял иначе — поменяй `LEG_CHANNELS` в `backend/spider_config.py`.
+
+**Шаг 4 — Проверка I2C**
+
+```bash
+sudo apt install i2c-tools
+sudo i2cdetect -y 1
+# В таблице должно быть 40 (PCA9685)
+```
+
+**Шаг 4½ — Python-зависимости (venv, обязательно на новых Raspberry Pi OS)**
+
+На Raspberry Pi OS Bookworm и новее **нельзя** ставить пакеты через системный `pip3` — будет ошибка `externally-managed-environment` (PEP 668). Используй виртуальное окружение в папке проекта:
+
+```bash
+cd ~/spider   # или путь к проекту
+chmod +x setup.sh start.sh
+./setup.sh
+```
+
+Скрипт `setup.sh` один раз:
+1. ставит `python3-venv` и `i2c-tools` через `apt`
+2. создаёт `.venv/` в папке проекта
+3. ставит зависимости из `requirements.txt`
+
+Вручную (если без скрипта):
+
+```bash
+sudo apt install python3-venv python3-pip i2c-tools
+cd ~/spider
+python3 -m venv .venv
+.venv/bin/pip install --upgrade pip
+.venv/bin/pip install --default-timeout=100 -r requirements.txt
+```
+
+Пакеты в `requirements.txt` (имена для pip):
+
+| pip-пакет | зачем |
+|-----------|-------|
+| `adafruit-circuitpython-servokit` | ServoKit / PCA9685 |
+| `adafruit-extended-bus` | I2C bus 1 (`ExtendedI2C`) — **не** `adafruit-circuitpython-extended-bus` |
+| `RPi.GPIO` | GPIO на Raspberry Pi |
+| `flask`, `flask-cors` | веб-пульт |
+
+**Шаг 5 — Тест каждого серво (интерактивно)**
+
+```bash
+cd ~/spider
+.venv/bin/python backend/test_servos.py
+```
+
+Скрипт:
+1. Проверит I2C и адрес `0x40`
+2. Поставит все серво в 90°
+3. По очереди повернёт каждый на +35° и спросит: «двинулся?»
+4. Запишет нерабочие в `backend/servo_test_report.json`
+
+**Шаг 6 — Запуск пульта**
+
+```bash
+cd ~/spider
+./start.sh
+# или: .venv/bin/python backend/server.py
+# Открыть http://<IP-Raspberry-Pi>:5000
+```
+
+**Шаг 7 — Автозапуск при включении Pi (опционально)**
+
+```bash
+sudo ./install-services.sh
+```
+
+Пульт и Wi‑Fi точка доступа (если нет домашней сети) стартуют сами, без логина. Подробнее — [Автозапуск пульта и Wi‑Fi точка доступа](#автозапуск-пульта-и-wi-fi-точка-доступа).
+
+---
 
 ### Подключение сервоприводов и настройка LEG_CHANNELS
 
@@ -48,6 +216,15 @@
 Общая земля (GND) между Raspberry Pi, PCA9685 и блоком питания обязательна.
 
 ### Подключение PCA9685 к Raspberry Pi по I2C
+
+**Сначала включи I2C в системе** (если ещё не делал на шаге 0):
+
+```bash
+sudo raspi-config
+# Interface Options → I2C → Enable → Finish → Reboot
+```
+
+Проводка:
 
 - **SDA** → GPIO 2 (Pin 3)
 - **SCL** → GPIO 3 (Pin 5)
@@ -94,6 +271,7 @@ sudo i2cdetect -y 1
 | Файл | Описание |
 |------|----------|
 | `backend/server.py` | HTTP-сервер (Flask). Раздаёт фронтенд, обрабатывает API-запросы (движение, углы, статус I2C). |
+| `backend/test_servos.py` | Интерактивный тест I2C и всех 12 серво по очереди. Сохраняет отчёт в `servo_test_report.json`. |
 | `backend/servo_manager.py` | Логика управления сервоприводами. Класс `ServoManager`: инициализация PCA9685, походка (вперёд/назад/влево/вправо), позы (встать, сесть, отжимание), махание лапкой. |
 | `backend/spider_config.py` | Конфигурация: углы для каждой ноги и сустава, маппинг каналов PCA9685, оффсеты. Здесь менять калибровку. |
 
@@ -121,58 +299,83 @@ sudo i2cdetect -y 1
 | Файл | Описание |
 |------|----------|
 | `image.png` | Карта углов (схема). |
-| `spider.service` | Unit-файл systemd для автозапуска сервера. |
-| `start.sh` | Скрипт запуска сервера с hot reload (Flask `debug=True`). |
+| `requirements.txt` | Python-зависимости (ставятся в `.venv`, не в систему). |
+| `setup.sh` | Один раз: создаёт `.venv` и ставит зависимости (`./setup.sh`). |
+| `install-services.sh` | Автозапуск пульта + Wi‑Fi AP через systemd. |
+| `start.sh` | Запуск сервера через `.venv/bin/python backend/server.py`. |
+| `scripts/spider-ap.sh` | Точка доступа, если домашний Wi‑Fi недоступен. |
+| `config/spider-ap.conf` | SSID/пароль точки доступа. |
 
 ---
 
-## Автозапуск сервера
+## Автозапуск пульта и Wi‑Fi точка доступа
 
-Запуск сервера при старте системы с hot reload (перезагрузка при изменении кода).
+Systemd-сервисы стартуют **до логина** (на этапе `multi-user.target`) — монитор и клавиатура не нужны.
 
-**Предполагается:** проект лежит в `~/spider` (например `/home/student/spider`).
+| Сервис | Что делает |
+|--------|------------|
+| `spider-ap` | 45 с ждёт домашний Wi‑Fi; если IP нет — поднимает точку доступа |
+| `spider` | Запускает веб-пульт на порту 5000 |
 
-### 1. Разместить проект
-
-Убедитесь, что проект (включая `start.sh`) лежит в `~/spider`. Скопируйте `spider.service` во временную папку для редактирования:
+### Установка (один раз)
 
 ```bash
-cp ~/spider/spider.service /tmp/
+cd ~/spider
+./setup.sh
+chmod +x install-services.sh start.sh scripts/spider-ap.sh
+sudo ./install-services.sh
 ```
 
-### 2. Настроить `spider.service`
+Скрипт сам подставит пути и пользователя в unit-файлы, добавит в группы `i2c`/`gpio`, включит автозапуск.
 
-Если домашняя папка не `/home/student`, отредактируйте пути:
+### Точка доступа (если домашний Wi‑Fi недоступен)
+
+Настройки в `config/spider-ap.conf`:
+
+| Параметр | По умолчанию |
+|----------|--------------|
+| `SPIDER_AP_SSID` | `Spider-Pi` |
+| `SPIDER_AP_PASSWORD` | `spider1234` |
+| `SPIDER_AP_WAIT_SEC` | `45` |
+
+После загрузки без Wi‑Fi:
+1. На телефоне/ноутбуке подключись к Wi‑Fi **Spider-Pi**
+2. Открой **http://10.42.0.1:5000** (или IP из `journalctl -u spider-ap`)
+3. SSH: `ssh georgy@10.42.0.1`
+
+Если домашний Wi‑Fi **есть** — AP не поднимается, пульт доступен по обычному IP Pi в роутере.
+
+### Проверка и логи
 
 ```bash
-sudo nano /tmp/spider.service
-```
-
-Замените `student` и `/home/student` на своего пользователя и путь к домашней папке.
-
-### 3. Установить и включить сервис
-
-```bash
-sudo cp /tmp/spider.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable spider
-sudo systemctl start spider
-```
-
-### 4. Проверить статус
-
-```bash
+sudo systemctl status spider-ap
 sudo systemctl status spider
+journalctl -u spider-ap -f
+journalctl -u spider -f
 ```
 
-Логи: `journalctl -u spider -f`
+Перезапуск вручную:
+
+```bash
+sudo systemctl restart spider-ap spider
+```
+
+Отключить автозапуск:
+
+```bash
+sudo systemctl disable spider spider-ap
+```
 
 ### Файлы
 
 | Файл | Назначение |
 |------|------------|
-| `start.sh` | Переход в `~/spider` и запуск `python3 backend/server.py` (Flask с `debug=True` → hot reload). |
-| `spider.service` | Systemd: запуск `start.sh` при загрузке, перезапуск при падении. |
+| `install-services.sh` | Установка обоих systemd-сервисов |
+| `systemd/spider.service` | Шаблон автозапуска пульта |
+| `systemd/spider-ap.service` | Шаблон точки доступа |
+| `scripts/spider-ap.sh` | Логика AP через NetworkManager |
+| `config/spider-ap.conf` | SSID и пароль точки доступа |
+| `start.sh` | `.venv/bin/python backend/server.py` (без debug в systemd) |
 
 ---
 
