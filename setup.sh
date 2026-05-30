@@ -5,16 +5,20 @@ set -e
 
 cd "$(dirname "$0")"
 
+PIP_OPTS=(--default-timeout=100 --retries 5)
+
 echo "==> Системные пакеты..."
 sudo apt update
 sudo apt install -y python3-venv python3-pip i2c-tools
 
 echo "==> Виртуальное окружение .venv ..."
-python3 -m venv .venv
+if [ ! -d .venv ]; then
+    python3 -m venv .venv
+fi
 
 echo "==> Python-зависимости..."
-.venv/bin/pip install --upgrade pip
-.venv/bin/pip install --default-timeout=100 -r requirements.txt
+# pip из venv достаточен; upgrade часто падает на piwheels при плохой сети
+.venv/bin/pip install "${PIP_OPTS[@]}" -r requirements.txt
 
 echo
 echo "Готово. Дальше:"
