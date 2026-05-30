@@ -181,8 +181,8 @@ cd ~/spider
 ```bash
 cd ~/spider
 ./start.sh
-# или: .venv/bin/python backend/server.py
-# Открыть http://<IP-Raspberry-Pi>:5000
+# http://<IP-Raspberry-Pi>:5000       — простой пульт (4 кнопки)
+# http://<IP-Raspberry-Pi>:5000/calibrate — настройка углов серво
 ```
 
 **Шаг 7 — Автозапуск при включении Pi (опционально)**
@@ -291,9 +291,11 @@ sudo i2cdetect -y 1
 ### Frontend
 | Файл | Описание |
 |------|----------|
-| `frontend/index.html` | Страница пульта: кнопки движения и действий, блоки для каждой ноги (FL, FR, BL, BR) с отображением углов и вводом значений. |
-| `frontend/app.js` | Логика интерфейса: вызовы API, обновление углов, статус I2C, тест сервоприводов. |
-| `frontend/style.css` | Стили: кнопки, карточки ног, сообщения, адаптивная вёрстка. |
+| `frontend/index.html` | Простой пульт: сесть, встать, отжаться, шаг вперёд (diagonal crawl). |
+| `frontend/app.js` | Логика простого пульта, блокировка кнопок на время движения. |
+| `frontend/calibrate.html` | Калибровка: 12 серво, углы, тест, все направления движения. |
+| `frontend/calibrate.js` | Логика страницы калибровки. |
+| `frontend/style.css` | Стили обоих пультов, mobile-first. |
 
 ### Прочее
 | Файл | Описание |
@@ -386,7 +388,8 @@ sudo systemctl disable spider spider-ap
 ### Статика
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
-| GET | `/` | Главная страница (index.html) |
+| GET | `/` | Простой пульт |
+| GET | `/calibrate` | Калибровка серво |
 | GET | `/<path:filename>` | Статические файлы из `frontend/` |
 
 ### API
@@ -394,8 +397,9 @@ sudo systemctl disable spider spider-ap
 |-------|----------|----------|-----------|
 | GET | `/api/angles` | Текущие углы всех сервоприводов | — |
 | GET | `/api/i2c_status` | Проверка подключения PCA9685 по I2C | — |
+| GET | `/api/motion_status` | `{ "busy": true/false }` — идёт ли движение | — |
 | POST | `/api/set_angle` | Установить угол для сустава | JSON в теле запроса, см. ниже |
-| POST | `/api/move_forward` | Движение вперёд | — |
+| POST | `/api/move_forward` | Один шаг вперёд (diagonal crawl FL→BR→FR→BL) | — |
 | POST | `/api/move_forward_2` | Движение вперёд (низкая стойка) | — |
 | POST | `/api/move_backward` | Движение назад | — |
 | POST | `/api/move_right` | Шаг вправо | — |
@@ -404,6 +408,8 @@ sudo systemctl disable spider spider-ap
 | POST | `/api/stand_up` | Встать | — |
 | POST | `/api/sit_down` | Сесть | — |
 | POST | `/api/push_up` | Отжимание | — |
+
+При повторном запросе во время движения — ответ **409** `{ "busy": true }`.
 
 ### POST `/api/set_angle` — тело запроса
 

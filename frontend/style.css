@@ -433,3 +433,94 @@ h1 {
         padding: 12px 30px;
     }
 }
+
+/* --- Простой пульт (/) --- */
+.simple-remote {
+    padding: 12px;
+}
+
+.simple-container {
+    max-width: 480px;
+    padding: 24px 20px;
+}
+
+.simple-container h1 {
+    font-size: 1.6em;
+    margin-bottom: 16px;
+}
+
+.simple-container h2 {
+    font-size: 1em;
+    color: #555;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.simple-section {
+    margin-bottom: 28px;
+}
+
+.simple-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.simple-grid-3 {
+    grid-template-columns: 1fr;
+}
+
+.simple-btn {
+    min-height: 52px;
+    padding: 14px 20px;
+    font-size: 1.15em;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    color: white;
+}
+
+.simple-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.simple-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.simple-btn-large {
+    width: 100%;
+    min-height: 64px;
+    font-size: 1.3em;
+}
+
+.simple-hint {
+    text-align: center;
+    color: #666;
+    font-size: 0.85em;
+    margin-top: 10px;
+}
+
+.nav-link {
+    text-align: center;
+    margin: 20px 0 8px;
+}
+
+.nav-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-link a:hover {
+    text-decoration: underline;
+}
+
+@media (min-width: 420px) {
+    .simple-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
