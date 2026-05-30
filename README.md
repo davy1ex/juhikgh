@@ -21,7 +21,7 @@
   - [Названия суставов](#названия-суставов)
   - [Обозначение ног](#обозначение-ног)
 - [Углы](#углы)
-- [Автозапуск сервера](#автозапуск-сервера)
+- [Автозапуск пульта и Wi‑Fi точка доступа](#автозапуск-пульта-и-wi-fi-точка-доступа)
 
 ---
 
@@ -121,58 +121,83 @@ sudo i2cdetect -y 1
 | Файл | Описание |
 |------|----------|
 | `image.png` | Карта углов (схема). |
-| `spider.service` | Unit-файл systemd для автозапуска сервера. |
-| `start.sh` | Скрипт запуска сервера с hot reload (Flask `debug=True`). |
+| `requirements.txt` | Python-зависимости (ставятся в `.venv`). |
+| `setup.sh` | Один раз: создаёт `.venv` и ставит зависимости. |
+| `install-services.sh` | Автозапуск пульта + Wi‑Fi AP через systemd. |
+| `start.sh` | Запуск сервера через `.venv/bin/python backend/server.py`. |
+| `scripts/spider-ap.sh` | Точка доступа, если домашний Wi‑Fi недоступен. |
+| `config/spider-ap.conf` | SSID/пароль точки доступа. |
 
 ---
 
-## Автозапуск сервера
+## Автозапуск пульта и Wi‑Fi точка доступа
 
-Запуск сервера при старте системы с hot reload (перезагрузка при изменении кода).
+Systemd-сервисы стартуют **до логина** (на этапе `multi-user.target`) — монитор и клавиатура не нужны.
 
-**Предполагается:** проект лежит в `~/spider` (например `/home/student/spider`).
+| Сервис | Что делает |
+|--------|------------|
+| `spider-ap` | 45 с ждёт домашний Wi‑Fi; если IP нет — поднимает точку доступа |
+| `spider` | Запускает веб-пульт на порту 5000 |
 
-### 1. Разместить проект
-
-Убедитесь, что проект (включая `start.sh`) лежит в `~/spider`. Скопируйте `spider.service` во временную папку для редактирования:
+### Установка (один раз)
 
 ```bash
-cp ~/spider/spider.service /tmp/
+cd ~/spider
+./setup.sh
+chmod +x install-services.sh start.sh scripts/spider-ap.sh
+sudo ./install-services.sh
 ```
 
-### 2. Настроить `spider.service`
+Скрипт сам подставит пути и пользователя в unit-файлы, добавит в группы `i2c`/`gpio`, включит автозапуск.
 
-Если домашняя папка не `/home/student`, отредактируйте пути:
+### Точка доступа (если домашний Wi‑Fi недоступен)
+
+Настройки в `config/spider-ap.conf`:
+
+| Параметр | По умолчанию |
+|----------|--------------|
+| `SPIDER_AP_SSID` | `Spider-Pi` |
+| `SPIDER_AP_PASSWORD` | `spider1234` |
+| `SPIDER_AP_WAIT_SEC` | `45` |
+
+После загрузки без Wi‑Fi:
+1. На телефоне/ноутбуке подключись к Wi‑Fi **Spider-Pi**
+2. Открой **http://10.42.0.1:5000** (или IP из `journalctl -u spider-ap`)
+3. SSH: `ssh <user>@10.42.0.1`
+
+Если домашний Wi‑Fi **есть** — AP не поднимается, пульт доступен по обычному IP Pi в роутере.
+
+### Проверка и логи
 
 ```bash
-sudo nano /tmp/spider.service
-```
-
-Замените `student` и `/home/student` на своего пользователя и путь к домашней папке.
-
-### 3. Установить и включить сервис
-
-```bash
-sudo cp /tmp/spider.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable spider
-sudo systemctl start spider
-```
-
-### 4. Проверить статус
-
-```bash
+sudo systemctl status spider-ap
 sudo systemctl status spider
+journalctl -u spider-ap -f
+journalctl -u spider -f
 ```
 
-Логи: `journalctl -u spider -f`
+Перезапуск вручную:
+
+```bash
+sudo systemctl restart spider-ap spider
+```
+
+Отключить автозапуск:
+
+```bash
+sudo systemctl disable spider spider-ap
+```
 
 ### Файлы
 
 | Файл | Назначение |
 |------|------------|
-| `start.sh` | Переход в `~/spider` и запуск `python3 backend/server.py` (Flask с `debug=True` → hot reload). |
-| `spider.service` | Systemd: запуск `start.sh` при загрузке, перезапуск при падении. |
+| `install-services.sh` | Установка обоих systemd-сервисов |
+| `systemd/spider.service` | Шаблон автозапуска пульта |
+| `systemd/spider-ap.service` | Шаблон точки доступа |
+| `scripts/spider-ap.sh` | Логика AP через NetworkManager |
+| `config/spider-ap.conf` | SSID и пароль точки доступа |
+| `start.sh` | `.venv/bin/python backend/server.py` (без debug в systemd) |
 
 ---
 

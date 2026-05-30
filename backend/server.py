@@ -79,10 +79,14 @@ app.add_url_rule('/api/push_up', 'push_up', _action_route('push_up', 'Push-up co
 
 
 if __name__ == '__main__':
+    import os
+    debug = os.environ.get('SPIDER_DEBUG', '1') == '1'
+
     print("=" * 60)
     print("Starting spider robot control server")
     print("=" * 60)
     print("Open in browser: http://localhost:5000")
     print("I2C PCA9685:", "подключен" if servo_manager.is_i2c_connected() else "не найден")
+    print("Debug mode:", debug)
     print("=" * 60)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=debug)

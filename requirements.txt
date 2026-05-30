@@ -1,0 +1,5 @@
+adafruit-circuitpython-servokit
+adafruit-extended-bus
+RPi.GPIO
+flask
+flask-cors
