@@ -12,8 +12,26 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 if [ ! -x "$PROJECT_DIR/.venv/bin/python" ]; then
-  echo "Сначала от пользователя $USER_NAME: cd $PROJECT_DIR && ./setup.sh"
-  exit 1
+  echo "Не найден: $PROJECT_DIR/.venv/bin/python"
+  echo
+  if [ ! -f "$PROJECT_DIR/setup.sh" ]; then
+    echo "Нет setup.sh. Подтяни код: cd $PROJECT_DIR && git pull"
+    exit 1
+  fi
+  echo "Сначала нужны Python-зависимости (venv). Без sudo:"
+  echo "  cd $PROJECT_DIR && ./setup.sh"
+  echo
+  read -r -p "Запустить setup.sh от имени $USER_NAME сейчас? [y/N] " setup_ans
+  if [[ "$setup_ans" =~ ^[yYдД] ]]; then
+    chmod +x "$PROJECT_DIR/setup.sh"
+    sudo -u "$USER_NAME" bash -lc "cd '$PROJECT_DIR' && ./setup.sh"
+  else
+    exit 1
+  fi
+  if [ ! -x "$PROJECT_DIR/.venv/bin/python" ]; then
+    echo "setup.sh не создал .venv — проверь ошибки pip выше."
+    exit 1
+  fi
 fi
 
 chmod +x "$PROJECT_DIR/start.sh" "$PROJECT_DIR/scripts/spider-ap.sh"

@@ -341,7 +341,7 @@ sudo ./install-services.sh
 После загрузки без Wi‑Fi:
 1. На телефоне/ноутбуке подключись к Wi‑Fi **Spider-Pi**
 2. Открой **http://10.42.0.1:5000** (или IP из `journalctl -u spider-ap`)
-3. SSH: `ssh georgy@10.42.0.1`
+3. SSH: `ssh <user>@10.42.0.1`
 
 Если домашний Wi‑Fi **есть** — AP не поднимается, пульт доступен по обычному IP Pi в роутере.
 
