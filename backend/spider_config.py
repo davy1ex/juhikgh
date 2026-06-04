@@ -44,6 +44,14 @@ FEMUR_LOW_DOWN_OFFSET = 10
 COXA_FORWARD = {'FL': 30, 'FR': 160, 'BL': 60, 'BR': 160}
 COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
 
+# Шаг назад: передние махают назад; задние — наружу (140/40 на BL/BR уводят внутрь)
+COXA_BACKWARD_SWING = {
+    'FL': COXA_BACKWARD['FL'],
+    'FR': COXA_BACKWARD['FR'],
+    'BL': COXA_FORWARD['BL'],
+    'BR': COXA_FORWARD['BR'],
+}
+
 # Coxa для бокового шага
 COXA_RIGHT = {'FL': 100, 'FR': 80, 'BL': 100, 'BR': 80}
 COXA_LEFT = {'FL': 50, 'FR': 130, 'BL': 130, 'BR': 50}
