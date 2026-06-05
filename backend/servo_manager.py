@@ -128,6 +128,9 @@ class ServoManager:
         time.sleep(d2)
         self._move_servo_fast(leg, 'femur', self._get_femur_offset_angle(leg, base_dict, femur_down_offset, 'down'))
         time.sleep(d3)
+        self._move_servo_fast(leg, 'femur', base_dict[leg])
+        self._move_servo_fast(leg, 'tibia', tibia_angles[leg])
+        time.sleep(d0)
         if return_coxa is not None and return_femur is not None and return_tibia is not None:
             self._move_servo_fast(leg, 'coxa', return_coxa[leg])
             time.sleep(d0)
@@ -137,8 +140,11 @@ class ServoManager:
             time.sleep(d0)
             self.current_coxa_angles[leg] = return_coxa[leg]
 
-    def _body_push_coxa(self, tibia_angles, coxa_start, coxa_end, steps=10, tibia_delay=0.05, step_delay=0.02):
+    def _body_push_coxa(self, tibia_angles, coxa_start, coxa_end, femur_angles=None,
+                        steps=10, tibia_delay=0.12, step_delay=0.02):
+        femur_angles = femur_angles or FEMUR_BASE
         for leg in VALID_LEGS:
+            self._move_servo_fast(leg, 'femur', femur_angles[leg])
             self._move_servo_fast(leg, 'tibia', tibia_angles[leg])
         time.sleep(tibia_delay)
 
@@ -169,7 +175,7 @@ class ServoManager:
                 )
                 self._body_push_coxa(
                     TIBIA_BASE, self.current_coxa_angles.copy(), COXA_BACKWARD,
-                    steps=10, tibia_delay=0.05, step_delay=0.02,
+                    femur_angles=FEMUR_BASE,
                 )
             return True
         except Exception as e:
@@ -198,7 +204,7 @@ class ServoManager:
                 )
                 self._body_push_coxa(
                     TIBIA_SIT2, self.current_coxa_angles.copy(), COXA_BACKWARD,
-                    steps=10, tibia_delay=0.05, step_delay=0.02,
+                    femur_angles=FEMUR_SIT2,
                 )
             return True
         except Exception as e:
@@ -210,7 +216,12 @@ class ServoManager:
 
     def _move_backward_cycle_impl(self):
         try:
+            if not self._stand_base_impl():
+                return False
+            time.sleep(0.15)
+            print(f"↩️ Шаг назад, порядок: {' → '.join(CRAWL_LEG_ORDER_BACKWARD)}")
             for leg in CRAWL_LEG_ORDER_BACKWARD:
+                print(f"↩️ Мах: {leg}")
                 self._swing_leg(
                     leg, TIBIA_BASE, COXA_BACKWARD_SWING,
                     FEMUR_UP_OFFSET, FEMUR_DOWN_OFFSET, FEMUR_BASE,
@@ -218,7 +229,7 @@ class ServoManager:
                 )
                 self._body_push_coxa(
                     TIBIA_BASE, self.current_coxa_angles.copy(), COXA_BASE,
-                    steps=10, tibia_delay=0.05, step_delay=0.02,
+                    femur_angles=FEMUR_BASE,
                 )
             return True
         except Exception as e:
