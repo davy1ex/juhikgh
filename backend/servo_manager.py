@@ -234,6 +234,9 @@ class ServoManager:
                     TIBIA_BASE, self.current_coxa_angles.copy(), COXA_FORWARD,
                     femur_angles=FEMUR_BASE,
                 )
+            # После цикла coxa в COXA_FORWARD (30/160/60/160) — не база; возвращаем стойку
+            if not self._stand_base_impl():
+                return False
             return True
         except Exception as e:
             print(f"⚠️ Ошибка при движении назад: {e}")
