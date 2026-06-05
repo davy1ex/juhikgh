@@ -44,12 +44,20 @@ FEMUR_LOW_DOWN_OFFSET = 10
 COXA_FORWARD = {'FL': 30, 'FR': 160, 'BL': 60, 'BR': 160}
 COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
 
-# Шаг назад: передние махают назад; задние — наружу (140/40 на BL/BR уводят внутрь)
+# Шаг назад — мах: FL/FR внутрь (COXA_BACKWARD), BL/BR наружу (COXA_FORWARD)
 COXA_BACKWARD_SWING = {
     'FL': COXA_BACKWARD['FL'],
     'FR': COXA_BACKWARD['FR'],
     'BL': COXA_FORWARD['BL'],
     'BR': COXA_FORWARD['BR'],
+}
+
+# Толчок назад — зеркало вперёд: передние к COXA_FORWARD (тело назад), задние в базу (наружу)
+COXA_BACKWARD_PUSH = {
+    'FL': COXA_FORWARD['FL'],
+    'FR': COXA_FORWARD['FR'],
+    'BL': COXA_BASE['BL'],
+    'BR': COXA_BASE['BR'],
 }
 
 # Coxa для бокового шага
