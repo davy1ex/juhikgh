@@ -15,7 +15,7 @@ from spider_config import (
     COXA_STANDUP, FEMUR_STANDUP, TIBIA_STANDUP,
     COXA_SIT2, FEMUR_SIT2, TIBIA_SIT2,
     FEMUR_UP_OFFSET, FEMUR_DOWN_OFFSET, FEMUR_LOW_UP_OFFSET, FEMUR_LOW_DOWN_OFFSET,
-    COXA_FORWARD, COXA_BACKWARD, COXA_BACKWARD_STEP, COXA_LEFT, COXA_RIGHT,
+    COXA_FORWARD, COXA_BACKWARD, COXA_BACKWARD_SWING, COXA_BACKWARD_PUSH, COXA_LEFT, COXA_RIGHT,
     CRAWL_LEG_ORDER, CRAWL_LEG_ORDER_BACKWARD,
 )
 
@@ -223,12 +223,12 @@ class ServoManager:
             for leg in CRAWL_LEG_ORDER_BACKWARD:
                 print(f"↩️ Мах: {leg}")
                 self._swing_leg(
-                    leg, TIBIA_BASE, COXA_BACKWARD_STEP,
+                    leg, TIBIA_BASE, COXA_BACKWARD_SWING,
                     FEMUR_UP_OFFSET, FEMUR_DOWN_OFFSET, FEMUR_BASE,
                     delays=self.SWING_DELAYS,
                 )
                 self._body_push_coxa(
-                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_BACKWARD_STEP,
+                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_BACKWARD_PUSH,
                     femur_angles=FEMUR_BASE,
                 )
             return True

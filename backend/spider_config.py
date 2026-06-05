@@ -44,13 +44,20 @@ FEMUR_LOW_DOWN_OFFSET = 10
 COXA_FORWARD = {'FL': 30, 'FR': 160, 'BL': 60, 'BR': 160}
 COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
 
-# Шаг назад: отдельные coxa-углы для фазы маха/толчка.
-# Для BL используем противоположное направление (наружу), чтобы не утыкаться в FR.
-COXA_BACKWARD_STEP = {
-    'FL': COXA_BACKWARD['FL'],   # 80 — к туловищу
-    'FR': COXA_BACKWARD['FR'],   # 100 — к туловищу
-    'BL': COXA_BACKWARD['BL'],   # 140 — от туловища (исправлено для шага назад)
-    'BR': COXA_FORWARD['BR'],    # 160 — от туловища
+# Шаг назад — мах: FL/FR к туловищу, BL/BR от туловища
+COXA_BACKWARD_SWING = {
+    'FL': COXA_BACKWARD['FL'],   # 80
+    'FR': COXA_BACKWARD['FR'],   # 100
+    'BL': COXA_FORWARD['BL'],    # 60 — наружу
+    'BR': COXA_FORWARD['BR'],    # 160 — наружу
+}
+
+# Толчок: передние к туловищу (сдвиг корпуса), задние в базу (без смыкания BL/BR)
+COXA_BACKWARD_PUSH = {
+    'FL': COXA_BACKWARD['FL'],
+    'FR': COXA_BACKWARD['FR'],
+    'BL': COXA_BASE['BL'],
+    'BR': COXA_BASE['BR'],
 }
 
 # Coxa для бокового шага
