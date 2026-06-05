@@ -216,13 +216,9 @@ class ServoManager:
 
     def _move_backward_cycle_impl(self):
         try:
-            if not self._stand_base_impl():
-                return False
-            time.sleep(0.15)
             print(f"↩️ Шаг назад, порядок: {' → '.join(CRAWL_LEG_ORDER_BACKWARD)}")
-            # Шаг назад = полный реверс шага вперёд:
-            # - мах в COXA_BACKWARD
-            # - толчок корпуса в COXA_FORWARD
+            # Шаг назад: мах в backward-позицию и затем толчок корпуса обратно в базу.
+            # После каждого мини-цикла ноги естественно приходят в COXA_BASE (без принудительного stand_base).
             for leg in CRAWL_LEG_ORDER_BACKWARD:
                 print(f"↩️ Мах: {leg}")
                 self._swing_leg(
@@ -231,12 +227,9 @@ class ServoManager:
                     delays=self.SWING_DELAYS,
                 )
                 self._body_push_coxa(
-                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_FORWARD,
+                    TIBIA_BASE, self.current_coxa_angles.copy(), COXA_BASE,
                     femur_angles=FEMUR_BASE,
                 )
-            # После цикла coxa в COXA_FORWARD (30/160/60/160) — не база; возвращаем стойку
-            if not self._stand_base_impl():
-                return False
             return True
         except Exception as e:
             print(f"⚠️ Ошибка при движении назад: {e}")
