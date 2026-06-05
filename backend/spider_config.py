@@ -42,7 +42,9 @@ FEMUR_LOW_DOWN_OFFSET = 10
 
 # Coxa для походки вперёд/назад
 COXA_FORWARD = {'FL': 30, 'FR': 160, 'BL': 60, 'BR': 160}
-COXA_BACKWARD = {'FL': 80, 'FR': 100, 'BL': 140, 'BR': 40}
+# Усиленный замах для шага назад (больше амплитуда относительно базы)
+# Было: FL=80, FR=100, BL=140, BR=40
+COXA_BACKWARD = {'FL': 90, 'FR': 90, 'BL': 155, 'BR': 25}
 
 # Шаг назад — мах: FL/FR к туловищу, BL/BR от туловища
 COXA_BACKWARD_SWING = {
